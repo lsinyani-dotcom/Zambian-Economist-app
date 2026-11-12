@@ -24,9 +24,9 @@ def load_logo(path):
     return logo
 
 
-def fit(logo, size, scale):
-    """Logo centred on a white square `size` wide, filling `scale` of it."""
-    canvas = Image.new('RGBA', (size, size), WHITE)
+def fit(logo, size, scale, bg=WHITE):
+    """Logo centred on a square `size` wide, filling `scale` of it."""
+    canvas = Image.new('RGBA', (size, size), bg)
     target = int(size * scale)
     w, h = logo.size
     r = target / max(w, h)
@@ -45,15 +45,23 @@ def round_mask(img):
 
 def main(src):
     logo = load_logo(src)
+    # A logo that is a solid block (like the ZE monogram) gets its own colour as the
+    # icon background, so the launcher icon is a full navy tile rather than a box on white.
+    corner = logo.getpixel((2, 2))
+    solid = corner[3] > 250 and logo.getpixel((logo.width - 3, logo.height - 3))[:3] == corner[:3]
+    bg = corner if solid else WHITE
+    hexbg = '#%02X%02X%02X' % bg[:3]
+    with open(os.path.join(RES, 'values', 'ic_launcher_background.xml'), 'w') as fh:
+        fh.write('<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <color name="ic_launcher_background">%s</color>\n</resources>\n' % hexbg)
     for name, d in DENSITIES.items():
         folder = os.path.join(RES, 'mipmap-' + name)
         os.makedirs(folder, exist_ok=True)
         legacy = int(48 * d)
-        fit(logo, legacy, 0.80).save(os.path.join(folder, 'ic_launcher.png'))
-        round_mask(fit(logo, legacy, 0.68)).save(os.path.join(folder, 'ic_launcher_round.png'))
+        fit(logo, legacy, 1.0 if solid else 0.80, bg).save(os.path.join(folder, 'ic_launcher.png'))
+        round_mask(fit(logo, legacy, 1.0 if solid else 0.68, bg)).save(os.path.join(folder, 'ic_launcher_round.png'))
         # Adaptive icon foreground: 108dp canvas, keep the mark inside the 66dp safe zone.
         fg = int(108 * d)
-        fit(logo, fg, 0.56).save(os.path.join(folder, 'ic_launcher_foreground.png'))
+        fit(logo, fg, 0.78 if solid else 0.56, bg).save(os.path.join(folder, 'ic_launcher_foreground.png'))
 
     # Splash images (older Android versions): white with the logo in the middle.
     for root, _dirs, files in os.walk(RES):
