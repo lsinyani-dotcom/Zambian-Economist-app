@@ -1,0 +1,23 @@
+{
+  "name": "zambian-economist-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "The Zambian Economist Android news app",
+  "scripts": {
+    "fonts": "node scripts/copy-fonts.mjs",
+    "sync": "npx cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.6.0",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/browser": "^8.0.5",
+    "@capacitor/core": "^8.6.0",
+    "@capacitor/share": "^8.0.3",
+    "@capacitor/splash-screen": "^8.0.2",
+    "@fontsource/inter": "^5.3.0",
+    "@fontsource/source-serif-4": "^5.3.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.6.0"
+  }
+}

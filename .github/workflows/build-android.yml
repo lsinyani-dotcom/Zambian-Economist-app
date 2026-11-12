@@ -1,0 +1,85 @@
+name: Build Android app
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install packages
+        run: npm ci
+
+      - name: Bundle fonts and runtime
+        run: npm run fonts
+
+      - name: App icon from the website logo
+        run: |
+          pip install --quiet pillow
+          if curl -fsSL -o resources/logo.png https://zambianeconomist.com/wp-content/uploads/2026/07/ze-monogram-512.png; then
+            python3 scripts/make_icons.py resources/logo.png
+          else
+            echo "Logo download failed, keeping the bundled icon"
+          fi
+
+      - name: Copy the app into the Android project
+        run: npx cap sync android
+
+      - name: Restore signing key
+        env:
+          KEYSTORE_B64: ${{ secrets.ZE_KEYSTORE_B64 }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
+            echo "ZE_KEYSTORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+          fi
+
+      - name: Build APK
+        working-directory: android
+        env:
+          ZE_KEYSTORE_PASSWORD: ${{ secrets.ZE_KEYSTORE_PASSWORD }}
+          ZE_KEY_ALIAS: ${{ secrets.ZE_KEY_ALIAS }}
+          ZE_KEY_PASSWORD: ${{ secrets.ZE_KEYSTORE_PASSWORD }}
+        run: |
+          chmod +x gradlew
+          if [ -n "$ZE_KEYSTORE_FILE" ]; then
+            ./gradlew assembleRelease --no-daemon
+            cp app/build/outputs/apk/release/app-release.apk "$RUNNER_TEMP/ZambianEconomist.apk"
+          else
+            ./gradlew assembleDebug --no-daemon
+            cp app/build/outputs/apk/debug/app-debug.apk "$RUNNER_TEMP/ZambianEconomist.apk"
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ZambianEconomist-apk
+          path: ${{ runner.temp }}/ZambianEconomist.apk
+
+      - name: Publish as a download (GitHub release)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="v1.0.${GITHUB_RUN_NUMBER}"
+          gh release create "$TAG" "$RUNNER_TEMP/ZambianEconomist.apk" \
+            --title "Zambian Economist app $TAG" \
+            --notes "Download ZambianEconomist.apk on your Android phone and open it to install or update." \
+            --latest

@@ -1,0 +1,6 @@
+node_modules/
+www/vendor/
+resources/logo.png
+*.jks
+*.keystore
+.DS_Store
