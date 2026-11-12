@@ -416,9 +416,15 @@
       t.parentNode.insertBefore(wrap, t); wrap.appendChild(t);
     });
     root.querySelectorAll('[style]').forEach(n => {
-      // Keep author colours and callout styling, but never fixed widths that break a phone screen.
-      n.style.removeProperty('width'); n.style.removeProperty('min-width');
-      n.style.removeProperty('max-width'); n.style.removeProperty('float');
+      // Keep the site's own styling (author headshots, callout boxes, colours) as it is,
+      // and only undo fixed widths too wide for a phone screen.
+      ['width', 'min-width'].forEach(prop => {
+        const v = n.style.getPropertyValue(prop);
+        const px = /^([\d.]+)px$/.exec(v);
+        if (px && parseFloat(px[1]) > 340) n.style.removeProperty(prop);
+      });
+      const w = /^([\d.]+)px$/.exec(n.style.width || '');
+      if (n.style.float && !(w && parseFloat(w[1]) <= 160)) n.style.removeProperty('float');
     });
     const div = document.createElement('div');
     div.appendChild(root);
@@ -437,7 +443,7 @@
         <span class="r-org">The Zambian Economist</span>
         <span>${isNaN(d) ? '' : esc(d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }))}${bodyHtml ? ' · ' + esc(readTime(bodyHtml)) : ''}</span>
       </div>
-      ${img ? `<figure class="r-hero"><img src="${esc(img.src)}" alt="${esc(img.alt)}">${img.alt ? `<figcaption>${esc(img.alt)}</figcaption>` : ''}</figure>` : ''}
+      ${img ? `<figure class="r-hero"><img src="${esc(img.src)}" alt="${esc(img.alt)}"></figure>` : ''}
       <div class="r-body">${bodyHtml != null ? bodyHtml : '<div class="pad"><span class="spinner"></span></div>'}</div>
       ${bodyHtml != null ? `<div class="r-foot">
         <button class="btn ghost" data-ext="${esc(p.link)}">Open on zambianeconomist.com</button>
