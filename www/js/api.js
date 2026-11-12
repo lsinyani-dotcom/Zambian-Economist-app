@@ -167,8 +167,15 @@
           title = title.replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim();
           return { id: m.id, date: m.date, title, url: m.source_url, thumb, size: m.media_details && m.media_details.filesize };
         });
-      cacheSet('editions', eds);
-      return eds;
+      // The same edition is sometimes uploaded more than once: keep the newest copy of each title.
+      const seen = new Set();
+      const unique = eds.filter(e => {
+        const k = e.title.toLowerCase().replace(/[^a-z0-9]+/g, '');
+        if (seen.has(k)) return false;
+        seen.add(k); return true;
+      });
+      cacheSet('editions', unique);
+      return unique;
     },
 
     cachedEditions() {

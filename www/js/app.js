@@ -85,7 +85,7 @@
   // Main sections, in the order of the website's navigation.
   const PREFERRED = [
     'business-economy', 'banking-finance', 'leadership-governance', 'agriculture-mining',
-    'auditor-general-explained', 'opinion', 'entrepreneurship-startups', 'technology-innovation',
+    'auditor-general-explained', 'opinion', 'politics', 'feature', 'entrepreneurship-startups', 'technology-innovation',
     'zambia-economy-2026', 'macroeconomy-policy', 'economic-diplomacy', 'zambia-tax-2026',
     'election-2026-economics', 'health-lifestyle', 'youth-women-empowerment', 'labour-employment',
   ];
@@ -307,16 +307,18 @@
       if (!eds) { el.innerHTML = '<div class="pad"><span class="spinner"></span></div>'; return; }
       const card = e => {
         const d = new Date(e.date);
-        const monthly = /monthly/i.test(e.title);
+        const kind = /monthly/i.test(e.title) ? 'Monthly Edition' : /special/i.test(e.title) ? 'Special Edition'
+          : /weekend/i.test(e.title) ? 'Weekend Edition' : 'Weekly Edition';
+        const heading = e.title.replace(/^The Zambian Economist[\s|:,.]*/i, '').replace(/\(([^)]*)\)/, '$1').trim() || e.title;
         const cover = e.thumb
           ? `<img src="${esc(e.thumb)}" alt="" loading="lazy">`
-          : `<div class="cover-ph"><span class="ph-the">The</span><span class="ph-name">Zambian Economist</span><span class="ph-type">${monthly ? 'Monthly' : 'Weekly'} Edition</span></div>`;
+          : `<div class="cover-ph"><span class="ph-the">The</span><span class="ph-name">Zambian Economist</span><span class="ph-type">${esc(kind)}</span></div>`;
         const size = e.size ? ' · ' + (e.size / 1048576).toFixed(1) + ' MB' : '';
         return `<button class="edition" data-ext="${esc(e.url)}">
           <div class="cover">${cover}</div>
           <div class="ed-text">
-            <div class="kicker">${monthly ? 'Monthly Edition' : 'Weekly Edition'}</div>
-            <h3>${esc(e.title.replace(/^The Zambian Economist\s*/i, ''))}</h3>
+            <div class="kicker">${esc(kind)}</div>
+            <h3>${esc(heading)}</h3>
             <div class="meta">Published ${esc(shortDate(d))} · PDF${esc(size)}</div>
           </div>
         </button>`;
