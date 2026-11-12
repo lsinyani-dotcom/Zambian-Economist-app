@@ -1,6 +1,6 @@
 {
   "appId": "com.zambianeconomist.app",
-  "appName": "Zambian Economist",
+  "appName": "The Zambian Economist",
   "webDir": "www",
   "android": {
     "allowMixedContent": false,
