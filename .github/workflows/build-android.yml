@@ -57,7 +57,7 @@ jobs:
         working-directory: android
         env:
           ZE_KEYSTORE_PASSWORD: ${{ secrets.ZE_KEYSTORE_PASSWORD }}
-          ZE_KEY_ALIAS: ${{ secrets.ZE_KEY_ALIAS }}
+          ZE_KEY_ALIAS: zambianeconomist
           ZE_KEY_PASSWORD: ${{ secrets.ZE_KEYSTORE_PASSWORD }}
         run: |
           chmod +x gradlew

@@ -21,7 +21,7 @@ New builds install over the old app, keeping saved articles, as long as they are
 
 ## Signing
 
-Release builds are signed with the key stored in three repository secrets: `ZE_KEYSTORE_B64`, `ZE_KEYSTORE_PASSWORD` and `ZE_KEY_ALIAS`. Keep a private copy of the keystore file: the same key is needed to publish updates on Google Play.
+Release builds are signed with the key stored in two repository secrets, `ZE_KEYSTORE_B64` and `ZE_KEYSTORE_PASSWORD` (key alias `zambianeconomist`). Keep a private copy of the keystore file: the same key is needed to publish updates on Google Play.
 
 ## Project layout
 
